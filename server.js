@@ -39,10 +39,18 @@ app.post('/cars', upload.single('photo'), (req, res) => {
 });
 
 
-// // Endpoint para listar vehículos registrados
-// app.get('/cars', (req, res) => {
-//     // Resto del código para listar vehículos
-// });
+
+    app.get('/cars', (req, res) => {
+        try{
+        console.log('Solicitud GET recibida en /cars: ', new Date().toLocaleString());
+        console.log('Respondiendo con la lista de vehículos:', vehicles);
+        res.status(200).json({ vehicles: vehiclesDB });
+
+    } catch (error) {
+        console.error('Error al procesar la solicitud GET en /cars:', error);
+        res.status(500).json({ message: 'Error interno del servidor' });
+    }
+    });
 
 // // Middleware para retirar un carro por placa
 // app.patch('/cars', (req, res) => {
