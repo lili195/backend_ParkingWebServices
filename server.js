@@ -42,9 +42,11 @@ app.post('/cars', upload.single('photo'), (req, res) => {
 
     app.get('/cars', (req, res) => {
         try{
+
         console.log('Solicitud GET recibida en /cars: ', new Date().toLocaleString());
+        const vehicles = vehiclesDB;
         console.log('Respondiendo con la lista de vehículos:', vehicles);
-        res.status(200).json({ vehicles: vehiclesDB });
+        res.status(200).json({ vehicles });
 
     } catch (error) {
         console.error('Error al procesar la solicitud GET en /cars:', error);
