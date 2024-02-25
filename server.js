@@ -9,7 +9,7 @@ const port = 8000;
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cors({
-    origin: 'http://localhost:8080',
+    origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true
 }))
@@ -38,11 +38,36 @@ app.post('/cars', upload.single('photo'), (req, res) => {
     }
 });
 
+app.get('/cars', (req, res) => {
+    try {
+        console.log('Solicitud GET recibida en /cars: ', new Date().toLocaleString());
+        const vehicles = vehiclesDB.map(vehicle => ({
+            licensePlate: vehicle.licensePlate,
+            color: vehicle.color,
+            entryTime: vehicle.entryTime,
+            photo: getBase64Image(vehicle.photoPath) 
+        }));
+        
+        console.log('Respondiendo con la lista de vehículos:', vehicles);
+        res.status(200).json({ vehicles });
 
-// // Endpoint para listar vehículos registrados
-// app.get('/cars', (req, res) => {
-//     // Resto del código para listar vehículos
-// });
+    } catch (error) {
+        console.error('Error al procesar la solicitud GET en /cars:', error);
+        res.status(500).json({ message: 'Error interno del servidor' });
+    }
+});
+
+// Función para convertir la imagen a base64
+function getBase64Image(path) {
+    if (!path) {
+        return null;
+    }
+
+    const fs = require('fs');
+    const image = fs.readFileSync(path);
+    return Buffer.from(image).toString('base64');
+}
+
 
 // // Middleware para retirar un carro por placa
 app.patch('/cars', (req, res) => {
