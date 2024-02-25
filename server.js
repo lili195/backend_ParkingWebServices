@@ -9,7 +9,7 @@ const port = 8000;
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cors({
-    origin: 'http://localhost:8080',
+    origin: process.env.CLIENT_ORIGIN,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true
 }))
@@ -27,7 +27,7 @@ app.post('/cars', upload.single('photo'), (req, res) => {
             licensePlate,
             color,
             entryTime,
-            photoPath
+            photoPath: photoPath.replace(/\\/g, '/'),
         };
         vehiclesDB.push(vehicle);
         console.log('Vehiculo registrado con éxito:', vehicle);
