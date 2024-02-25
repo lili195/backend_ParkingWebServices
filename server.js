@@ -27,7 +27,7 @@ app.post('/cars', upload.single('photo'), (req, res) => {
             licensePlate,
             color,
             entryTime,
-            photoPath: photoPath.replace(/\\/g, '/'),
+            photoPath
         };
         vehiclesDB.push(vehicle);
         console.log('Vehiculo registrado con éxito:', vehicle);
@@ -41,7 +41,12 @@ app.post('/cars', upload.single('photo'), (req, res) => {
 app.get('/cars', (req, res) => {
     try {
         console.log('Solicitud GET recibida en /cars: ', new Date().toLocaleString());
-        const vehicles = vehiclesDB;
+        const vehicles = vehiclesDB.map(vehicle => ({
+            licensePlate: vehicle.licensePlate,
+            color: vehicle.color,
+            entryTime: vehicle.entryTime,
+            photo: getBase64Image(vehicle.photoPath) 
+        }));
         
         console.log('Respondiendo con la lista de vehículos:', vehicles);
         res.status(200).json({ vehicles });
@@ -51,6 +56,18 @@ app.get('/cars', (req, res) => {
         res.status(500).json({ message: 'Error interno del servidor' });
     }
 });
+
+// Función para convertir la imagen a base64
+function getBase64Image(path) {
+    if (!path) {
+        return null;
+    }
+
+    const fs = require('fs');
+    const image = fs.readFileSync(path);
+    return Buffer.from(image).toString('base64');
+}
+
 
 // // Middleware para retirar un carro por placa
 // app.patch('/cars', (req, res) => {
