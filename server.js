@@ -9,7 +9,7 @@ const port = 8000;
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cors({
-    origin: process.env.CLIENT_ORIGIN,
+    origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true
 }))
@@ -38,13 +38,11 @@ app.post('/cars', upload.single('photo'), (req, res) => {
     }
 });
 
-
-
-    app.get('/cars', (req, res) => {
-        try{
-
+app.get('/cars', (req, res) => {
+    try {
         console.log('Solicitud GET recibida en /cars: ', new Date().toLocaleString());
         const vehicles = vehiclesDB;
+        
         console.log('Respondiendo con la lista de vehículos:', vehicles);
         res.status(200).json({ vehicles });
 
@@ -52,7 +50,7 @@ app.post('/cars', upload.single('photo'), (req, res) => {
         console.error('Error al procesar la solicitud GET en /cars:', error);
         res.status(500).json({ message: 'Error interno del servidor' });
     }
-    });
+});
 
 // // Middleware para retirar un carro por placa
 // app.patch('/cars', (req, res) => {
