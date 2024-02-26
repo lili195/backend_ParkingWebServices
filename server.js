@@ -47,7 +47,6 @@ app.get('/cars', (req, res) => {
             entryTime: vehicle.entryTime,
             photo: getBase64Image(vehicle.photoPath) 
         }));
-        
         console.log('Respondiendo con la lista de vehículos:', vehicles);
         res.status(200).json({ vehicles });
 
@@ -68,11 +67,19 @@ function getBase64Image(path) {
     return Buffer.from(image).toString('base64');
 }
 
-
 // // Middleware para retirar un carro por placa
-// app.patch('/cars', (req, res) => {
-//     // Resto del código para retirar un carro
-// });
+app.patch('/cars', (req, res) => {
+    const retiredPlate = req.body;
+    const retiredIndex = vehiclesDB.findIndex(vehicule => vehicule.licensePlate === retiredPlate);
+    if (retiredIndex != null) {
+        vehiclesDB.splice(retiredIndex, 1);
+        console.log("Vehiculo retirado exitosamente");
+        res.status(200).json({ message: "Se retiro el vehiculo exitosamente" })
+    } else {
+        console.log("No se pudo retirar el vehiculo");
+        res.status(400).json({ message: "No se retiro el vehiculo correctamente" })
+    }
+});
 
 app.listen(port, () => {
     console.log('Listening on localhost:3000')
