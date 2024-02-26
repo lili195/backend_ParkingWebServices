@@ -4,6 +4,7 @@ const cors = require('cors')
 const { upload } = require('./helpers/fileHandler');
 
 const app = express();
+const serverIP = process.env.SERVER_IP
 const port = 8000;
 
 app.use(express.json())
@@ -11,7 +12,6 @@ app.use(express.urlencoded({ extended: false }))
 app.use(cors({
     origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true
 }))
 
 const vehiclesDB = [];
@@ -95,6 +95,6 @@ app.patch('/cars', (req, res) => {
 });
 
 
-app.listen(port, () => {
-    console.log('Listening on localhost:3000')
+app.listen(port, serverIP, () => {
+    console.log(`Servidor escuchando en http://${serverIP}:${port}`)
 })
