@@ -9,7 +9,7 @@ const port = 8000;
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cors({
-    origin: 'http://localhost:8080',
+    origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true
 }))
@@ -45,9 +45,8 @@ app.get('/cars', (req, res) => {
             licensePlate: vehicle.licensePlate,
             color: vehicle.color,
             entryTime: vehicle.entryTime,
-            photo: getBase64Image(vehicle.photoPath)
+            photo: getBase64Image(vehicle.photoPath) 
         }));
-
         console.log('Respondiendo con la lista de vehículos:', vehicles);
         res.status(200).json({ vehicles });
 
