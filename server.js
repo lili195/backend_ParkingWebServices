@@ -1,4 +1,6 @@
-require('dotenv').config();
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config()
+}
 const express = require('express');
 const cors = require('cors')
 const { upload } = require('./helpers/fileHandler');
@@ -12,6 +14,7 @@ app.use(express.urlencoded({ extended: false }))
 app.use(cors({
     origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true
 }))
 
 const vehiclesDB = [];
@@ -95,6 +98,10 @@ app.patch('/cars', (req, res) => {
 });
 
 
-app.listen(port, serverIP, () => {
-    console.log(`Servidor escuchando en http://${serverIP}:${port}`)
+// app.listen(port, serverIP, () => {
+//     console.log(`Servidor escuchando en el puerto 8000`)
+// })
+
+app.listen(port, () => {
+    console.log(`Servidor escuchando en el puerto 8000`)
 })
