@@ -56,7 +56,7 @@ app.get('/cars', (req, res) => {
             licensePlate: vehicle.licensePlate,
             color: vehicle.color,
             entryTime: vehicle.entryTime,
-            photo: getBase64Image(vehicle.photoPath)
+            photo: vehicle.photoPath
         }));
         console.log('Respondiendo con la lista de vehículos:', vehicles);
         res.status(200).json({ vehicles });
