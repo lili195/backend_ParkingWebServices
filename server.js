@@ -6,7 +6,6 @@ const cors = require('cors')
 const { upload } = require('./helpers/fileHandler');
 
 const app = express();
-const serverIP = process.env.SERVER_IP
 const port = 8000;
 
 app.use(express.json())
@@ -96,11 +95,6 @@ app.patch('/cars', (req, res) => {
         res.status(400).json({ message: "No se retiró el vehiculo correctamente" });
     }
 });
-
-
-// app.listen(port, serverIP, () => {
-//     console.log(`Servidor escuchando en el puerto 8000`)
-// })
 
 app.listen(port, () => {
     console.log(`Servidor escuchando en el puerto 8000`)
