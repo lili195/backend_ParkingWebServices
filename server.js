@@ -6,7 +6,7 @@ const cors = require('cors')
 const { upload } = require('./helpers/fileHandler');
 
 const app = express();
-const port = 8000;
+const port = process.env.PORT;
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
@@ -97,5 +97,5 @@ app.patch('/cars', (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`Servidor escuchando en el puerto 8000`)
+    console.log(`Servidor escuchando en el puerto ${port}`)
 })
