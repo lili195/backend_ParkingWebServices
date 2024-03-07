@@ -7,6 +7,7 @@ const { upload } = require('./helpers/fileHandler');
 
 const app = express();
 const port = process.env.PORT
+const ipAddress = process.env.IP_ADDRESS
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
@@ -105,5 +106,5 @@ app.patch('/cars', (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`Servidor escuchando en el puerto 8000`)
+    console.log(`Servidor escuchando en ${ipAddress}:${port}`)
 })
