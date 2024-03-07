@@ -4,6 +4,7 @@ if (process.env.NODE_ENV !== 'production') {
 const express = require('express');
 const cors = require('cors')
 const { upload } = require('./helpers/fileHandler');
+const { Client } = require('pg');
 
 const app = express();
 const port = 8000;
@@ -17,6 +18,18 @@ app.use(cors({
 }))
 
 const vehiclesDB = [];
+const client = new Client({
+    user: 'postgres',
+    host: 'localhost',
+    database: 'ParkingWebService',
+    password: 'Malagon444',
+    port: 5432
+})
+
+client.connect()
+    .then(() => console.log('Conexión exitosa'))
+    .catch(error => console.error('Error de conexión:', error))
+    .finally(() => client.end());
 
 // Endpoint para el registro de ingreso
 app.post('/cars', upload.single('photo'), (req, res) => {
