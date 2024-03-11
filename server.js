@@ -22,7 +22,7 @@ const client = new Client({
     user: 'postgres',
     host: 'localhost',
     database: 'ParkingWebService',
-    password: 'Malagon444',
+    password: process.env.DBPASSWORD,
     port: 5432
 })
 
@@ -59,6 +59,7 @@ app.post('/cars', upload.single('photo'), (req, res) => {
                 photoPath
             };
             vehiclesDB.push(vehicle);
+            insertDB(licensePlate, color, photoPath);
             logRequest(req.ip, 'POST', '/cars', 'Vehículo registrado con éxito:', vehicle);
             res.status(200).json({ message: 'Entrada del vehículo registrada con éxito en el servidor', vehicle });
         } else {
@@ -77,6 +78,7 @@ app.get('/cars', (req, res) => {
             entryTime: vehicle.entryTime,
             photo: getBase64Image(vehicle.photoPath)
         }));
+        getDB();
         logRequest(req.ip, 'GET', '/cars', 'Respondiendo con la lista de vehículos:', vehiclesDB);
         res.status(200).json({ vehicles });
 
@@ -95,6 +97,18 @@ function getBase64Image(path) {
     const fs = require('fs');
     const image = fs.readFileSync(path);
     return Buffer.from(image).toString('base64');
+}
+
+async function insertDB(licensePlate, color, photoPath){
+    const result = await client.query(
+        'INSERT INTO carros (licensePlate, color, photopath) VALUES ($1, $2, $3) RETURNING *',
+        [licensePlate, color, photoPath]
+    );
+}
+
+async function getDB(){
+    const result = await client.query('SELECT * FROM carros');
+    res.json(result.rows);
 }
 
 // // Middleware para retirar un carro por placa
