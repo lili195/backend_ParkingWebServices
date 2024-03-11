@@ -7,7 +7,7 @@ const { upload } = require('./helpers/fileHandler');
 const { Client } = require('pg');
 
 const app = express();
-const port = 8000;
+const port = process.env.PORT
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
@@ -31,9 +31,15 @@ client.connect()
     .catch(error => console.error('Error de conexión:', error))
     .finally(() => client.end());
 
+function logRequest(ip, method, url, message, body) {
+    const date = new Date().toLocaleDateString();
+    const time = new Date().toLocaleTimeString();
+    console.log(`([Ip: ${ip}, Fecha: ${date}, Hora: ${time}] , Solicitud: ${method}, Mensaje: ${message}, Respuesta: ${JSON.stringify(body)})`);
+}
+
 // Endpoint para el registro de ingreso
 app.post('/cars', upload.single('photo'), (req, res) => {
-    console.log('Solicitud POST recibida en /cars: ', new Date().toLocaleString());
+    logRequest(req.ip, 'POST', '/cars', 'Registro Carro', null);
     const { licensePlate, color } = req.body;
     const entryTime = new Date();
     const photoPath = req.file ? req.file.path : null;
@@ -42,7 +48,7 @@ app.post('/cars', upload.single('photo'), (req, res) => {
     const existingIndex = vehiclesDB.findIndex(vehicle => vehicle.licensePlate === licensePlate);
 
     if (existingIndex !== -1) {
-        console.log('La placa ya está registrada:', vehiclesDB[existingIndex]);
+        logRequest(req.ip, 'POST', '/cars','La placa ya está registrada:', vehiclesDB[existingIndex] );
         res.status(400).json({ message: 'La placa ya está registrada en el servidor' });
     } else {
         if (photoPath) {
@@ -53,10 +59,10 @@ app.post('/cars', upload.single('photo'), (req, res) => {
                 photoPath
             };
             vehiclesDB.push(vehicle);
-            console.log('Vehículo registrado con éxito:', vehicle);
+            logRequest(req.ip, 'POST', '/cars', 'Vehículo registrado con éxito:', vehicle);
             res.status(200).json({ message: 'Entrada del vehículo registrada con éxito en el servidor', vehicle });
         } else {
-            console.log('No se pudo obtener la imagen:', photoPath);
+            logRequest(req.ip, 'POST', '/cars', 'No se pudo obtener la imagen:', photoPath);
             res.status(401).json({ message: 'No fue posible registrar el vehículo en el servidor' });
         }
     }
@@ -64,14 +70,14 @@ app.post('/cars', upload.single('photo'), (req, res) => {
 
 app.get('/cars', (req, res) => {
     try {
-        console.log('Solicitud GET recibida en /cars: ', new Date().toLocaleString());
+        logRequest(req.ip, 'GET', '/cars', 'Listar Carro');
         const vehicles = vehiclesDB.map(vehicle => ({
             licensePlate: vehicle.licensePlate,
             color: vehicle.color,
             entryTime: vehicle.entryTime,
             photo: getBase64Image(vehicle.photoPath)
         }));
-        console.log('Respondiendo con la lista de vehículos:', vehiclesDB);
+        logRequest(req.ip, 'GET', '/cars', 'Respondiendo con la lista de vehículos:', vehiclesDB);
         res.status(200).json({ vehicles });
 
     } catch (error) {
@@ -93,22 +99,24 @@ function getBase64Image(path) {
 
 // // Middleware para retirar un carro por placa
 app.patch('/cars', (req, res) => {
+    logRequest(req.ip, 'PATCH', '/cars', 'Retirar Carro');
     const retiredPlate = req.body.licensePlate;
-    console.log(retiredPlate);
+    logRequest(req.ip, 'PATCH', '/cars', 'Placa Retirada: ' ,retiredPlate);
 
     const retiredIndex = vehiclesDB.findIndex(vehicle => vehicle.licensePlate === retiredPlate);
-    console.log(retiredIndex);
+    logRequest(req.ip, 'PATCH', '/cars', ' Posicion retirada: ',retiredIndex);
+
 
     if (retiredIndex !== -1) { // Cambiado para comparar con -1 en lugar de null
         vehiclesDB.splice(retiredIndex, 1);
-        console.log("Vehiculo retirado exitosamente");
+        logRequest(req.ip, 'PATCH', '/cars', 'Vehiculo retirado exitosamente');
         res.status(200).json({ message: "Se retiró el vehiculo exitosamente" });
     } else {
-        console.log("No se pudo retirar el vehiculo");
+        logRequest(req.ip, 'PATCH', '/cars', 'No se pudo retirar el vehiculo');
         res.status(400).json({ message: "No se retiró el vehiculo correctamente" });
     }
 });
 
 app.listen(port, () => {
-    console.log(`Servidor escuchando en el puerto 8000`)
+    console.log(`Servidor escuchando en el puerto: ${port}`)
 })
