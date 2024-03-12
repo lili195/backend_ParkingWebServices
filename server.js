@@ -17,7 +17,10 @@ app.use(cors({
     credentials: true
 }))
 
+
+
 const vehiclesDB = [];
+
 
 function logRequest(ip, method, url, message, body) {
     const date = new Date().toLocaleDateString();
@@ -25,8 +28,14 @@ function logRequest(ip, method, url, message, body) {
     console.log(`([Ip: ${ip}, Fecha: ${date}, Hora: ${time}] , Solicitud: ${method}, Mensaje: ${message}, Respuesta: ${JSON.stringify(body)})`);
 }
 
+
+
 // Endpoint para el registro de ingreso
-app.post('/cars', upload.single('photo'), (req, res) => {
+app.post('/cars', (req, res) => {
+
+    const originalBody = req.method === 'GET' ? req.query : req.body;
+    console.log('Original Body:', originalBody);
+
     logRequest(req.ip, 'POST', '/cars', 'Registro Carro', null);
     const { licensePlate, color } = req.body;
     const entryTime = new Date();
@@ -39,7 +48,7 @@ app.post('/cars', upload.single('photo'), (req, res) => {
         logRequest(req.ip, 'POST', '/cars','La placa ya está registrada:', vehiclesDB[existingIndex] );
         res.status(400).json({ message: 'La placa ya está registrada en el servidor' });
     } else {
-        if (photoPath) {
+        //if (photoPath) {
             const vehicle = {
                 licensePlate,
                 color,
@@ -49,10 +58,10 @@ app.post('/cars', upload.single('photo'), (req, res) => {
             vehiclesDB.push(vehicle);
             logRequest(req.ip, 'POST', '/cars', 'Vehículo registrado con éxito:', vehicle);
             res.status(200).json({ message: 'Entrada del vehículo registrada con éxito en el servidor', vehicle });
-        } else {
-            logRequest(req.ip, 'POST', '/cars', 'No se pudo obtener la imagen:', photoPath);
-            res.status(401).json({ message: 'No fue posible registrar el vehículo en el servidor' });
-        }
+        // } else {
+        //     logRequest(req.ip, 'POST', '/cars', 'No se pudo obtener la imagen:', photoPath);
+        //     res.status(401).json({ message: 'No fue posible registrar el vehículo en el servidor' });
+        // }
     }
 });
 
