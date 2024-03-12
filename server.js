@@ -17,7 +17,6 @@ app.use(cors({
     credentials: true
 }))
 
-const vehiclesDB = [];
 const client = new Client({
     user: 'postgres',
     host: 'localhost',
@@ -45,10 +44,9 @@ app.post('/cars', upload.single('photo'), (req, res) => {
     const photoPath = req.file ? req.file.path : null;
 
     // Verificar si la placa ya existe en la base de datos
-    const existingIndex = vehiclesDB.findIndex(vehicle => vehicle.licensePlate === licensePlate);
 
     if (existingIndex !== -1) {
-        logRequest(req.ip, 'POST', '/cars','La placa ya está registrada:', vehiclesDB[existingIndex] );
+        logRequest(req.ip, 'POST', '/cars','La placa ya está registrada:' );
         res.status(400).json({ message: 'La placa ya está registrada en el servidor' });
     } else {
         if (photoPath) {
@@ -72,12 +70,6 @@ app.post('/cars', upload.single('photo'), (req, res) => {
 app.get('/cars', (req, res) => {
     try {
         logRequest(req.ip, 'GET', '/cars', 'Listar Carro');
-        const vehicles = vehiclesDB.map(vehicle => ({
-            licensePlate: vehicle.licensePlate,
-            color: vehicle.color,
-            entryTime: vehicle.entryTime,
-            photo: getBase64Image(vehicle.photoPath)
-        }));
         getDB();
         logRequest(req.ip, 'GET', '/cars', 'Respondiendo con la lista de vehículos:', vehiclesDB);
         res.status(200).json({ vehicles });
@@ -112,22 +104,23 @@ async function getDB(){
 }
 
 // // Middleware para retirar un carro por placa
-app.patch('/cars', (req, res) => {
+app.patch('/cars', async (req, res) => {
     logRequest(req.ip, 'PATCH', '/cars', 'Retirar Carro');
-    const retiredPlate = req.body.licensePlate;
-    logRequest(req.ip, 'PATCH', '/cars', 'Placa Retirada: ' ,retiredPlate);
+    try {
+        const {retiredPlate} = req.body.licensePlate;
+        logRequest(req.ip, 'PATCH', '/cars', 'Placa Retirada: ', retiredPlate);
 
-    const retiredIndex = vehiclesDB.findIndex(vehicle => vehicle.licensePlate === retiredPlate);
-    logRequest(req.ip, 'PATCH', '/cars', ' Posicion retirada: ',retiredIndex);
+        const result = await client.query('DELETE FROM carros WHERE id = $1', [retiredPlate]);
+        logRequest(req.ip, 'PATCH', '/cars', ' Posicion retirada: ', result);
 
 
-    if (retiredIndex !== -1) { // Cambiado para comparar con -1 en lugar de null
-        vehiclesDB.splice(retiredIndex, 1);
-        logRequest(req.ip, 'PATCH', '/cars', 'Vehiculo retirado exitosamente');
-        res.status(200).json({ message: "Se retiró el vehiculo exitosamente" });
-    } else {
-        logRequest(req.ip, 'PATCH', '/cars', 'No se pudo retirar el vehiculo');
-        res.status(400).json({ message: "No se retiró el vehiculo correctamente" });
+        if (result.rowCount === 0) {
+            logRequest(req.ip, 'PATCH', '/cars', 'No se pudo retirar el vehiculo');
+            res.status(400).json({message: "No se retiró el vehiculo correctamente"});
+        }
+    }catch (error){
+        console.error('Error al procesar la solicitud PATCH en /cars:', error);
+        res.status(500).json({ message: 'Error interno del servidor' });
     }
 });
 
