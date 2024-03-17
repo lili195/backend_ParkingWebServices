@@ -28,8 +28,6 @@ function logRequest(ip, method, url, message, body) {
     console.log(`([Ip: ${ip}, Fecha: ${date}, Hora: ${time}] , Solicitud: ${method}, Mensaje: ${message}, Respuesta: ${JSON.stringify(body)})`);
 }
 
-
-
 // Endpoint para el registro de ingreso
 app.post('/cars', upload.single('photo'), (req, res) => {
     logRequest(req.ip, 'POST', '/cars', 'Registro Carro', null);
@@ -58,35 +56,6 @@ app.post('/cars', upload.single('photo'), (req, res) => {
         logRequest(req.ip, 'POST', '/cars', 'Vehículo registrado con éxito:', vehicle);
         res.status(200).json({ message: 'Entrada del vehículo registrada con éxito en el servidor', vehicle });
     }
-
-    //res.status(200).json({ message: 'recibido ok' });
-    // const originalBody = req.method === 'GET' ? req.query : req.body;
-    // console.log('Original Body:', originalBody);
-
-    // logRequest(req.ip, 'POST', '/cars', 'Registro Carro', null);
-    // const { licensePlate, color } = req.body;
-    // const entryTime = new Date();
-    // //const photoPath = req.file ? req.file.path : null;
-    // const photo = Buffer.from(req.body.photo).toString('base64');
-
-    // // Verificar si la placa ya existe en la base de datos
-    // const existingIndex = vehiclesDB.findIndex(vehicle => vehicle.licensePlate === licensePlate);
-
-    // if (existingIndex !== -1) {
-    //     logRequest(req.ip, 'POST', '/cars', 'La placa ya está registrada:', vehiclesDB[existingIndex]);
-    //     res.status(200).json({ message: 'La placa ya está registrada en el servidor' });
-    // } else {
-    //     const vehicle = {
-    //         licensePlate,
-    //         color,
-    //         entryTime,
-    //         //photoPath
-    //         photo
-    //     };
-    //     vehiclesDB.push(vehicle);
-    //     logRequest(req.ip, 'POST', '/cars', 'Vehículo registrado con éxito:', vehicle);
-    //     res.status(200).json({ message: 'Entrada del vehículo registrada con éxito en el servidor', vehicle });
-    // }
 });
 
 app.get('/cars', (req, res) => {
