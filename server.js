@@ -6,8 +6,7 @@ const cors = require('cors')
 const { upload } = require('./helpers/fileHandler');
 
 const app = express();
-
-const port = process.env.PORT;
+const port = process.env.PORT
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
