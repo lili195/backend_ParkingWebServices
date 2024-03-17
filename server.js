@@ -31,38 +31,62 @@ function logRequest(ip, method, url, message, body) {
 
 
 // Endpoint para el registro de ingreso
-app.post('/cars', (req, res) => {
-
-    const originalBody = req.method === 'GET' ? req.query : req.body;
-    console.log('Original Body:', originalBody);
-
+app.post('/cars', upload.single('photo'), (req, res) => {
     logRequest(req.ip, 'POST', '/cars', 'Registro Carro', null);
+    if (!req.file) {
+        return res.status(400).json({ message: 'No se ha adjuntado ningún archivo' });
+    }
+
     const { licensePlate, color } = req.body;
     const entryTime = new Date();
     const photoPath = req.file ? req.file.path : null;
 
-    // Verificar si la placa ya existe en la base de datos
+    const vehicle = {
+        licensePlate,
+        color,
+        entryTime,
+        photoPath
+    };
+
     const existingIndex = vehiclesDB.findIndex(vehicle => vehicle.licensePlate === licensePlate);
 
     if (existingIndex !== -1) {
-        logRequest(req.ip, 'POST', '/cars','La placa ya está registrada:', vehiclesDB[existingIndex] );
-        res.status(400).json({ message: 'La placa ya está registrada en el servidor' });
+        logRequest(req.ip, 'POST', '/cars', 'La placa ya está registrada:', vehiclesDB[existingIndex]);
+        res.status(200).json({ message: 'La placa ya está registrada en el servidor' });
     } else {
-        //if (photoPath) {
-            const vehicle = {
-                licensePlate,
-                color,
-                entryTime,
-                photoPath
-            };
-            vehiclesDB.push(vehicle);
-            logRequest(req.ip, 'POST', '/cars', 'Vehículo registrado con éxito:', vehicle);
-            res.status(200).json({ message: 'Entrada del vehículo registrada con éxito en el servidor', vehicle });
-        // } else {
-        //     logRequest(req.ip, 'POST', '/cars', 'No se pudo obtener la imagen:', photoPath);
-        //     res.status(401).json({ message: 'No fue posible registrar el vehículo en el servidor' });
-        // }
+        vehiclesDB.push(vehicle);
+        logRequest(req.ip, 'POST', '/cars', 'Vehículo registrado con éxito:', vehicle);
+        res.status(200).json({ message: 'Entrada del vehículo registrada con éxito en el servidor', vehicle });
     }
+
+    //res.status(200).json({ message: 'recibido ok' });
+    // const originalBody = req.method === 'GET' ? req.query : req.body;
+    // console.log('Original Body:', originalBody);
+
+    // logRequest(req.ip, 'POST', '/cars', 'Registro Carro', null);
+    // const { licensePlate, color } = req.body;
+    // const entryTime = new Date();
+    // //const photoPath = req.file ? req.file.path : null;
+    // const photo = Buffer.from(req.body.photo).toString('base64');
+
+    // // Verificar si la placa ya existe en la base de datos
+    // const existingIndex = vehiclesDB.findIndex(vehicle => vehicle.licensePlate === licensePlate);
+
+    // if (existingIndex !== -1) {
+    //     logRequest(req.ip, 'POST', '/cars', 'La placa ya está registrada:', vehiclesDB[existingIndex]);
+    //     res.status(200).json({ message: 'La placa ya está registrada en el servidor' });
+    // } else {
+    //     const vehicle = {
+    //         licensePlate,
+    //         color,
+    //         entryTime,
+    //         //photoPath
+    //         photo
+    //     };
+    //     vehiclesDB.push(vehicle);
+    //     logRequest(req.ip, 'POST', '/cars', 'Vehículo registrado con éxito:', vehicle);
+    //     res.status(200).json({ message: 'Entrada del vehículo registrada con éxito en el servidor', vehicle });
+    // }
 });
 
 app.get('/cars', (req, res) => {
@@ -98,10 +122,10 @@ function getBase64Image(path) {
 app.patch('/cars', (req, res) => {
     logRequest(req.ip, 'PATCH', '/cars', 'Retirar Carro');
     const retiredPlate = req.body.licensePlate;
-    logRequest(req.ip, 'PATCH', '/cars', 'Placa Retirada: ' ,retiredPlate);
+    logRequest(req.ip, 'PATCH', '/cars', 'Placa Retirada: ', retiredPlate);
 
     const retiredIndex = vehiclesDB.findIndex(vehicle => vehicle.licensePlate === retiredPlate);
-    logRequest(req.ip, 'PATCH', '/cars', ' Posicion retirada: ',retiredIndex);
+    logRequest(req.ip, 'PATCH', '/cars', ' Posicion retirada: ', retiredIndex);
 
 
     if (retiredIndex !== -1) { // Cambiado para comparar con -1 en lugar de null
