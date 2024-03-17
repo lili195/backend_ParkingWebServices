@@ -17,10 +17,7 @@ app.use(cors({
     credentials: true
 }))
 
-
-
 const vehiclesDB = [];
-
 
 function logRequest(ip, method, url, message, body) {
     const date = new Date().toLocaleDateString();
