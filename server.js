@@ -73,10 +73,7 @@ app.get('/cars', async (req, res) => {
         logRequest(req.ip, 'GET', '/cars', 'Listar Carro');
         const client = await pool.connect();
         const result = await client.query('SELECT * FROM vehicles');
-        const vehicles = result.rows.map(vehicle => {
-            vehicle.photo = getBase64Image(vehicle.photoPath);
-            return vehicle;
-        });
+        const vehicles = result.rows;
         client.release();
         logRequest(req.ip, 'GET', '/cars', 'Respondiendo con la lista de vehículos:', vehicles);
         res.status(200).json({ vehicles });
