@@ -46,9 +46,19 @@ const pool = new Pool({
     const photoPath = req.file ? req.file.path : null;
 
     try {
+        // Verificar si la placa ya está registrada
         const client = await pool.connect();
-        const result = await client.query('INSERT INTO vehicles (license_plate, color, entry_time, photo_path) VALUES ($1, $2, $3, $4)', [licensePlate, color, entryTime, photoPath]);
+        const existingVehicle = await client.query('SELECT * FROM vehicles WHERE licensePlate = $1', [licensePlate]);
         client.release();
+
+        if (existingVehicle.rows.length > 0) {
+            // Si ya existe un vehículo con esa placa, informar al usuario
+            return res.status(400).json({ message: 'La placa ya está registrada en la base de datos' });
+        }
+
+        const insertResult = await client.query('INSERT INTO vehicles (licenseplate, color, entryTime, photopath) VALUES ($1, $2, $3, $4)', [licensePlate, color, entryTime, photoPath]);
+
+
         logRequest(req.ip, 'POST', '/cars', 'Vehículo registrado con éxito:', { licensePlate, color, entryTime, photoPath });
         res.status(200).json({ message: 'Entrada del vehículo registrada con éxito en la base de datos' });
     } catch (err) {
@@ -57,12 +67,16 @@ const pool = new Pool({
     }
 });
 
+
 app.get('/cars', async (req, res) => {
     try {
         logRequest(req.ip, 'GET', '/cars', 'Listar Carro');
         const client = await pool.connect();
         const result = await client.query('SELECT * FROM vehicles');
-        const vehicles = result.rows;
+        const vehicles = result.rows.map(vehicle => {
+            vehicle.photo = getBase64Image(vehicle.photoPath);
+            return vehicle;
+        });
         client.release();
         logRequest(req.ip, 'GET', '/cars', 'Respondiendo con la lista de vehículos:', vehicles);
         res.status(200).json({ vehicles });
@@ -72,13 +86,14 @@ app.get('/cars', async (req, res) => {
     }
 });
 
+
 app.patch('/cars', async (req, res) => {
-    const { licensePlate } = req.body.licensePlate; 
+    const { licensePlate } = req.body;
     logRequest(req.ip, 'PATCH', '/cars', 'Retirar Carro');
     
     try {
         const client = await pool.connect();
-        const result = await client.query('DELETE FROM vehicles WHERE license_plate = $1', [licensePlate]);
+        const result = await client.query('DELETE FROM vehicles WHERE licenseplate = $1', [licensePlate]);
         client.release();
         if (result.rowCount > 0) {
             logRequest(req.ip, 'PATCH', '/cars', 'Vehículo retirado exitosamente');
@@ -106,25 +121,7 @@ function getBase64Image(path) {
     return Buffer.from(image).toString('base64');
 }
 
-// // // Middleware para retirar un carro por placa
-// app.patch('/cars', (req, res) => {
-//     logRequest(req.ip, 'PATCH', '/cars', 'Retirar Carro');
-//     const retiredPlate = req.body.licensePlate;
-//     logRequest(req.ip, 'PATCH', '/cars', 'Placa Retirada: ', retiredPlate);
 
-//     const retiredIndex = vehiclesDB.findIndex(vehicle => vehicle.licensePlate === retiredPlate);
-//     logRequest(req.ip, 'PATCH', '/cars', ' Posicion retirada: ', retiredIndex);
-
-
-//     if (retiredIndex !== -1) { // Cambiado para comparar con -1 en lugar de null
-//         vehiclesDB.splice(retiredIndex, 1);
-//         logRequest(req.ip, 'PATCH', '/cars', 'Vehiculo retirado exitosamente');
-//         res.status(200).json({ message: "Se retiró el vehiculo exitosamente" });
-//     } else {
-//         logRequest(req.ip, 'PATCH', '/cars', 'No se pudo retirar el vehiculo');
-//         res.status(400).json({ message: "No se retiró el vehiculo correctamente" });
-//     }
-// });
 
 app.listen(port, () => {
     console.log(`Servidor escuchando en el puerto: ${port}`)
