@@ -19,22 +19,21 @@ app.use(cors({
     credentials: true
 }))
 
-
-
-
 function logRequest(ip, method, url, message, body) {
     const date = new Date().toLocaleDateString();
     const time = new Date().toLocaleTimeString();
     console.log(`([Ip: ${ip}, Fecha: ${date}, Hora: ${time}] , Solicitud: ${method}, Mensaje: ${message}, Respuesta: ${JSON.stringify(body)})`);
 }
 
+
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: false
-  });
-  
+ });
+
 
   app.post('/cars', upload.single('photo'), async (req, res) => {
+
     logRequest(req.ip, 'POST', '/cars', 'Registro Carro', null);
     if (!req.file) {
         return res.status(400).json({ message: 'No se ha adjuntado ningún archivo' });
@@ -116,7 +115,6 @@ function getBase64Image(path) {
     const image = fs.readFileSync(path);
     return Buffer.from(image).toString('base64');
 }
-
 
 app.listen(port_server, async () => {
     console.log(`Servidor en funcionamiento en el puerto ${port_server}`);
