@@ -2,7 +2,7 @@
 FROM node
 
 # Establece el directorio de trabajo en /app
-WORKDIR /app_server_one
+WORKDIR /app
 
 # Copia los archivos necesarios
 COPY package.json package.json
@@ -14,6 +14,7 @@ RUN npm install
 
 # Expone el puerto en el que la aplicación va a ejecutarse
 EXPOSE $PORT
+EXPOSE $DATABASE_URL
 
 # Comando para ejecutar la aplicación
 CMD ["node", "server.js"]
