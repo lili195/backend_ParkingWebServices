@@ -17,6 +17,7 @@ const storage = multer.diskStorage({
   destination: uploadDirectory,
   filename: function (req, file, cb) {
     // Cambia el nombre del archivo para incluir un timestamp único
+
     console.log("Archivo entrante: ",file.mimetype)
     const timestamp = Date.now();
     const fileExtension = file.mimetype.split('/')[1]; 
