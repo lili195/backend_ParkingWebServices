@@ -10,6 +10,7 @@
   "author": "Liliana Hernandez - Laura Malagon - Laura Vela",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.6.8",
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "multer": "^1.4.5-lts.1",

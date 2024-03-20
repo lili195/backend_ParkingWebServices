@@ -3,12 +3,13 @@ if (process.env.NODE_ENV !== 'production') {
 }
 const express = require('express');
 const cors = require('cors')
+const axios = require('axios');
 const { upload } = require('./helpers/fileHandler');
 const { Pool } = require('pg');
 
 const app = express();
 
-const port = process.env.PORT;
+const port_server = process.env.PORT;
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
@@ -117,7 +118,15 @@ function getBase64Image(path) {
 }
 
 
+app.listen(port_server, async () => {
+    console.log(`Servidor en funcionamiento en el puerto ${port_server}`);
 
-app.listen(port, () => {
-    console.log(`Servidor escuchando en el puerto: ${port}`)
-})
+    // Envía la dirección IP y puerto al balanceador de carga
+    try {
+        console.log(`Enviando dirección IP y puerto al balanceador de carga en ${process.env.BALANCER_URL}/register-server`);
+        await axios.post(`${process.env.BALANCER_URL}/register-server`, { ip: '127.0.0.1', port: port_server });
+        console.log('Dirección IP y puerto enviados al balanceador de carga.');
+    } catch (error) {
+        console.error('Error al enviar la dirección IP y puerto al balanceador de carga:', error.message);
+    }
+});
