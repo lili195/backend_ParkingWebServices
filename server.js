@@ -122,24 +122,19 @@ app.get('/cars/monitor/healthchek', (req, res) => {
     res.sendStatus(200);
 });
 
-/* A CONTINUACION: PARA ENVIAR LA RESPUESTA DESPUES DE UN TIEMPO ALEATORIO (SIN PROBAR)
-*
-*
+
 app.get('/cars/monitor/healthchek', (req, res) => {
     console.log("Solicitud de healthcheck entrante...")
 
-    // Generar un tiempo aleatorio entre 1 y 5 segundos
+    //Generar un tiempo aleatorio entre 1 y 5 segundos
     const randomTime = Math.floor(Math.random() * (5000 - 1000 + 1)) + 1000;
 
-    // Enviar la respuesta después del tiempo aleatorio
+    //Enviar la respuesta después del tiempo aleatorio
     setTimeout(() => {
         res.sendStatus(200);
     }, randomTime);
 });
 
-*
-*
-*/
 
 
 // Enviar la ip y puerto actual
@@ -155,13 +150,11 @@ const sendIpAndPort = async (url, ip, port) => {
 app.listen(port_server, async () => {
     console.log(`Servidor en funcionamiento en el puerto ${port_server}`);
 
-    console.log(`Enviando dirección IP y puerto ${port_server} al balanceador de carga en 
-    ${process.env.BALANCER_URL}/balancer/register-server`);
+    console.log(`Enviando dirección IP y puerto ${port_server} al balanceador de carga en ${process.env.BALANCER_URL}/balancer/register-server`);
 
     sendIpAndPort(`${process.env.BALANCER_URL}/balancer/register-server`, ip_server, port_server)
 
-    console.log(`Enviando dirección IP y puerto ${port_server} al monitor en 
-    ${process.env.MONITOR_URL}/monitor/register-server`);
+    console.log(`Enviando dirección IP y puerto ${port_server} al monitor en ${process.env.MONITOR_URL}/monitor/register-server`);
 
     sendIpAndPort(`${process.env.MONITOR_URL}/monitor/register-server`, ip_server, port_server)
 });
