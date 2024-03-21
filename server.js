@@ -10,6 +10,7 @@ const { Pool } = require('pg');
 const app = express();
 
 const port_server = process.env.PORT;
+const ip_server = process.env.IP_ADDR;
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
@@ -29,10 +30,10 @@ function logRequest(ip, method, url, message, body) {
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: false
- });
+});
 
 
-  app.post('/cars', upload.single('photo'), async (req, res) => {
+app.post('/cars', upload.single('photo'), async (req, res) => {
 
     logRequest(req.ip, 'POST', '/cars', 'Registro Carro', null);
     if (!req.file) {
@@ -58,7 +59,7 @@ const pool = new Pool({
 
 
         logRequest(req.ip, 'POST', '/cars', 'Vehículo registrado con éxito:', { licensePlate, color, entryTime, photoPath });
-        res.status(200).json({ message: 'Entrada del vehículo registrada con éxito en la base de datos' });
+        res.status(200).json({ message: 'Entrada del vehículo registrada con éxito en la base de datos', insertResult });
     } catch (err) {
         console.error('Error al insertar vehículo en la base de datos:', err);
         res.status(500).json({ message: 'Error interno del servidor al registrar el vehículo' });
@@ -85,7 +86,7 @@ app.get('/cars', async (req, res) => {
 app.patch('/cars', async (req, res) => {
     const { licensePlate } = req.body;
     logRequest(req.ip, 'PATCH', '/cars', 'Retirar Carro');
-    
+
     try {
         const client = await pool.connect();
         const result = await client.query('DELETE FROM vehicles WHERE licenseplate = $1', [licensePlate]);
@@ -116,15 +117,51 @@ function getBase64Image(path) {
     return Buffer.from(image).toString('base64');
 }
 
+app.get('/cars/monitor/healthchek', (req, res) => {
+    console.log("Solicitud de healthcheck entrante...")
+    res.sendStatus(200);
+});
+
+/* A CONTINUACION: PARA ENVIAR LA RESPUESTA DESPUES DE UN TIEMPO ALEATORIO (SIN PROBAR)
+*
+*
+app.get('/cars/monitor/healthchek', (req, res) => {
+    console.log("Solicitud de healthcheck entrante...")
+
+    // Generar un tiempo aleatorio entre 1 y 5 segundos
+    const randomTime = Math.floor(Math.random() * (5000 - 1000 + 1)) + 1000;
+
+    // Enviar la respuesta después del tiempo aleatorio
+    setTimeout(() => {
+        res.sendStatus(200);
+    }, randomTime);
+});
+
+*
+*
+*/
+
+
+// Enviar la ip y puerto actual
+const sendIpAndPort = async (url, ip, port) => {
+    try {
+        await axios.post(url, { ip: ip, port: port });
+        console.log(`Dirección y puerto enviados con éxito a ${url}`)
+    } catch (error) {
+        console.error(`Error al enviar la dirección IP y puerto a ${url}:`, error.message);
+    }
+}
+
 app.listen(port_server, async () => {
     console.log(`Servidor en funcionamiento en el puerto ${port_server}`);
 
-    // Envía la dirección IP y puerto al balanceador de carga
-    try {
-        console.log(`Enviando dirección IP y puerto al balanceador de carga en ${process.env.BALANCER_URL}/register-server`);
-        await axios.post(`${process.env.BALANCER_URL}/register-server`, { ip: '127.0.0.1', port: port_server });
-        console.log('Dirección IP y puerto enviados al balanceador de carga.');
-    } catch (error) {
-        console.error('Error al enviar la dirección IP y puerto al balanceador de carga:', error.message);
-    }
+    console.log(`Enviando dirección IP y puerto ${port_server} al balanceador de carga en 
+    ${process.env.BALANCER_URL}/balancer/register-server`);
+
+    sendIpAndPort(`${process.env.BALANCER_URL}/balancer/register-server`, ip_server, port_server)
+
+    console.log(`Enviando dirección IP y puerto ${port_server} al monitor en 
+    ${process.env.MONITOR_URL}/monitor/register-server`);
+
+    sendIpAndPort(`${process.env.MONITOR_URL}/monitor/register-server`, ip_server, port_server)
 });
