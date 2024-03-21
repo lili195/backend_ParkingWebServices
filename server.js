@@ -126,7 +126,7 @@ function getBase64Image(path) {
 app.get('/cars/monitor/healthchek', (req, res) => {
     console.log("Solicitud de healthcheck entrante...")
 
-    const randomTime = Math.floor(Math.random() * (5000-1000+1))+1000;
+    const randomTime = Math.floor(Math.random() * (30 - 10));
 
     //Enviar la respuesta después del tiempo aleatorio
     setTimeout(() => {
