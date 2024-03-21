@@ -117,17 +117,16 @@ function getBase64Image(path) {
     return Buffer.from(image).toString('base64');
 }
 
-app.get('/cars/monitor/healthchek', (req, res) => {
-    console.log("Solicitud de healthcheck entrante...")
-    res.sendStatus(200);
-});
+// app.get('/cars/monitor/healthchek', (req, res) => {
+//     console.log("Solicitud de healthcheck entrante...")
+//     res.sendStatus(200);
+// });
 
 
 app.get('/cars/monitor/healthchek', (req, res) => {
     console.log("Solicitud de healthcheck entrante...")
 
-    //Generar un tiempo aleatorio entre 1 y 5 segundos
-    const randomTime = Math.floor(Math.random() * (5000 - 1000 + 1)) + 1000;
+    const randomTime = Math.floor(Math.random() * (5000-1000+1))+1000;
 
     //Enviar la respuesta después del tiempo aleatorio
     setTimeout(() => {
