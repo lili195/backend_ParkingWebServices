@@ -26,6 +26,12 @@ function logRequest(ip, method, url, message, body) {
     console.log(`([Ip: ${ip}, Fecha: ${date}, Hora: ${time}] , Solicitud: ${method}, Mensaje: ${message}, Respuesta: ${JSON.stringify(body)})`);
 }
 
+function logRequestMessage(message) {
+    const date = new Date().toLocaleDateString();
+    const time = new Date().toLocaleTimeString();
+    console.log(`([Fecha: ${date}, Hora: ${time}] , ${message})`);
+}
+
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
@@ -119,11 +125,10 @@ function getBase64Image(path) {
 
 
 app.get('/cars/monitor/healthchek', (req, res) => {
-    console.log("Solicitud de healthcheck entrante...")
+    logRequestMessage("Solicitud de healthcheck entrante...")
 
     const randomTime = Math.floor(Math.random() * (30 - 10));
 
-    //Enviar la respuesta después del tiempo aleatorio
     setTimeout(() => {
         res.sendStatus(200);
     }, randomTime);
@@ -132,7 +137,7 @@ app.get('/cars/monitor/healthchek', (req, res) => {
 
 const stopServer = (server) => {
     server.close(() => {
-        console.log(`Servidor detenido`);
+        logRequestMessage(`Servidor detenido`);
     });
 };
 
@@ -142,28 +147,28 @@ const stopServer = (server) => {
 const sendIpAndPort = async (url, ip, port) => {
     try {
         await axios.post(url, { ip: ip, port: port });
-        console.log(`Dirección y puerto enviados con éxito a ${url}`)
+        logRequest(`Dirección y puerto enviados con éxito a ${url}`)
     } catch (error) {
-        console.error(`Error al enviar la dirección IP y puerto a ${url}:`, error.message);
+        logRequest(`Error al enviar la dirección IP y puerto a ${url}:`, error.message);
     }
 }
 
 const server = app.listen(port_server, async () => {
     console.log(`Servidor en funcionamiento en el puerto ${port_server}`);
 
-    console.log(`Enviando dirección IP y puerto ${port_server} al balanceador de carga en ${process.env.BALANCER_URL}/balancer/register-server`);
+    logRequestMessage(`Enviando dirección IP y puerto ${port_server} al balanceador de carga en ${process.env.BALANCER_URL}/balancer/register-server`);
 
     sendIpAndPort(`${process.env.BALANCER_URL}/balancer/register-server`, ip_server, port_server)
 
-    console.log(`Enviando dirección IP y puerto ${port_server} al monitor en ${process.env.MONITOR_URL}/monitor/register-server`);
+    logRequestMessage(`Enviando dirección IP y puerto ${port_server} al monitor en ${process.env.MONITOR_URL}/monitor/register-server`);
 
     sendIpAndPort(`${process.env.MONITOR_URL}/monitor/register-server`, ip_server, port_server)
 
     // Detener el servidor después de un tiempo aleatorio
     const minTime = 10000; 
-    const maxTime = 60000;
+    const maxTime = 120000;
     const randomTime = Math.floor(Math.random() * (maxTime - minTime + 1)) + minTime;
-    console.log(`El servidor se detendrá después de ${randomTime} milisegundos.`);
+    logRequestMessage(`El servidor se detendrá después de ${randomTime} milisegundos.`);
 
     setTimeout(() => {
         stopServer(server);
