@@ -117,22 +117,24 @@ function getBase64Image(path) {
     return Buffer.from(image).toString('base64');
 }
 
-// app.get('/cars/monitor/healthchek', (req, res) => {
-//     console.log("Solicitud de healthcheck entrante...")
-//     res.sendStatus(200);
-// });
-
 
 app.get('/cars/monitor/healthchek', (req, res) => {
     console.log("Solicitud de healthcheck entrante...")
 
-    const randomTime = Math.floor(Math.random() * (5000-1000+1))+1000;
+    const randomTime = Math.floor(Math.random() * (30-10+1))+10;
 
     //Enviar la respuesta después del tiempo aleatorio
     setTimeout(() => {
         res.sendStatus(200);
     }, randomTime);
 });
+
+
+const stopServer = (server) => {
+    server.close(() => {
+        console.log(`Servidor detenido`);
+    });
+};
 
 
 
@@ -146,7 +148,7 @@ const sendIpAndPort = async (url, ip, port) => {
     }
 }
 
-app.listen(port_server, async () => {
+const server = app.listen(port_server, async () => {
     console.log(`Servidor en funcionamiento en el puerto ${port_server}`);
 
     console.log(`Enviando dirección IP y puerto ${port_server} al balanceador de carga en ${process.env.BALANCER_URL}/balancer/register-server`);
@@ -156,4 +158,14 @@ app.listen(port_server, async () => {
     console.log(`Enviando dirección IP y puerto ${port_server} al monitor en ${process.env.MONITOR_URL}/monitor/register-server`);
 
     sendIpAndPort(`${process.env.MONITOR_URL}/monitor/register-server`, ip_server, port_server)
+
+    // Detener el servidor después de un tiempo aleatorio
+    const minTime = 10000; 
+    const maxTime = 60000;
+    const randomTime = Math.floor(Math.random() * (maxTime - minTime + 1)) + minTime;
+    console.log(`El servidor se detendrá después de ${randomTime} milisegundos.`);
+
+    setTimeout(() => {
+        stopServer(server);
+    }, randomTime);
 });
