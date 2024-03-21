@@ -117,9 +117,21 @@ function getBase64Image(path) {
     return Buffer.from(image).toString('base64');
 }
 
+// app.get('/cars/monitor/healthchek', (req, res) => {
+//     console.log("Solicitud de healthcheck entrante...")
+//     res.sendStatus(200);
+// });
+
 app.get('/cars/monitor/healthchek', (req, res) => {
     console.log("Solicitud de healthcheck entrante...")
-    res.sendStatus(200);
+
+    // Generar un tiempo aleatorio entre 1 y 5 segundos
+    const randomTime = Math.floor(Math.random() * (100 - 10 + 1)) + 10;
+
+    // Enviar la respuesta después del tiempo aleatorio
+    setTimeout(() => {
+        res.sendStatus(200);
+    }, randomTime);
 });
 
 /* A CONTINUACION: PARA ENVIAR LA RESPUESTA DESPUES DE UN TIEMPO ALEATORIO (SIN PROBAR)
