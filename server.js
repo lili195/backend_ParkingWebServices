@@ -6,11 +6,9 @@ const cors = require('cors')
 const axios = require('axios');
 const { upload } = require('./helpers/fileHandler');
 const { Pool } = require('pg');
-
 const app = express();
 
 const port_server = process.env.PORT;
-const ip_server = process.env.IP_ADDR;
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
@@ -20,12 +18,25 @@ app.use(cors({
     credentials: true
 }))
 
+const { networkInterfaces } = require('os');
+
+const interfaces = networkInterfaces();
+const ip_server = interfaces['Wi-Fi'][3].address;
+
+console.log(`IP actual: ${ip_server}`);
+
+
 function logRequest(ip, method, url, message, body) {
     const date = new Date().toLocaleDateString();
     const time = new Date().toLocaleTimeString();
     console.log(`([Ip: ${ip}, Fecha: ${date}, Hora: ${time}] , Solicitud: ${method}, Mensaje: ${message}, Respuesta: ${JSON.stringify(body)})`);
 }
 
+function printLog(message) {
+    const date = new Date().toLocaleDateString();
+    const time = new Date().toLocaleTimeString();
+    console.log(`[Fecha: ${date}] [Hora: ${time}] [Mensaje: ${message}]`);
+}
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
@@ -123,7 +134,7 @@ function getBase64Image(path) {
 // });
 
 app.get('/cars/monitor/healthchek', (req, res) => {
-    console.log("Solicitud de healthcheck entrante...")
+    printLog("Solicitud de healthcheck entrante...")
 
     // Generar un tiempo aleatorio entre 1 y 5 segundos
     const randomTime = Math.floor(Math.random() * (100 - 10 + 1)) + 10;
@@ -158,21 +169,21 @@ app.get('/cars/monitor/healthchek', (req, res) => {
 const sendIpAndPort = async (url, ip, port) => {
     try {
         await axios.post(url, { ip: ip, port: port });
-        console.log(`Dirección y puerto enviados con éxito a ${url}`)
+        printLog(`Dirección y puerto enviados con éxito a ${url}`)
     } catch (error) {
         console.error(`Error al enviar la dirección IP y puerto a ${url}:`, error.message);
     }
 }
 
 app.listen(port_server, async () => {
-    console.log(`Servidor en funcionamiento en el puerto ${port_server}`);
+    printLog(`Servidor en funcionamiento en el puerto ${port_server}`);
 
-    console.log(`Enviando dirección IP y puerto ${port_server} al balanceador de carga en 
+    printLog(`Enviando dirección IP y puerto ${port_server} al balanceador de carga en 
     ${process.env.BALANCER_URL}/balancer/register-server`);
 
     sendIpAndPort(`${process.env.BALANCER_URL}/balancer/register-server`, ip_server, port_server)
 
-    console.log(`Enviando dirección IP y puerto ${port_server} al monitor en 
+    printLog(`Enviando dirección IP y puerto ${port_server} al monitor en 
     ${process.env.MONITOR_URL}/monitor/register-server`);
 
     sendIpAndPort(`${process.env.MONITOR_URL}/monitor/register-server`, ip_server, port_server)
