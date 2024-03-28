@@ -17,6 +17,7 @@ EXPOSE $PORT
 EXPOSE $DATABASE_URL
 EXPOSE $BALANCER_URL
 EXPOSE $MONITOR_URL
+EXPOSE $IP_ADDRESS
 
 # Comando para ejecutar la aplicación
 CMD ["node", "server.js"]
