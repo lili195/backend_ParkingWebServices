@@ -18,13 +18,8 @@ app.use(cors({
     credentials: true
 }))
 
-const { networkInterfaces } = require('os');
-
-const interfaces = networkInterfaces();
-const ip_server = interfaces['Wi-Fi'][3].address;
-
-console.log(`IP actual: ${ip_server}`);
-
+const ip_server = process.env.IP_ADDRESS;
+console.log("Direccion IP:", ip_server)
 
 function logRequest(ip, method, url, message, body) {
     const date = new Date().toLocaleDateString();

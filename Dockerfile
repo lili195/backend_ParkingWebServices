@@ -12,9 +12,11 @@ COPY . .
 # Instala las dependencias
 RUN npm install
 
-# Expone el puerto en el que la aplicación va a ejecutarse
+# Expone las variables de entorno con las que aplicación va a ejecutarse
 EXPOSE $PORT
 EXPOSE $DATABASE_URL
+EXPOSE $BALANCER_URL
+EXPOSE $MONITOR_URL
 
 # Comando para ejecutar la aplicación
 CMD ["node", "server.js"]
